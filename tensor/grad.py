@@ -1,6 +1,7 @@
 from typing import List
 
 def grad(node):
+    """ Computes the gradients of the provided node and all of its ancestors in the graph. The gradients are accumulated in the `grad` attribute of the nodes. """
     nodes = topo_sort(node)
     node.grad = 1.0
 
@@ -10,6 +11,7 @@ def grad(node):
             parent.grad += backpropGrad
 
 def topo_sort(node) -> List:
+    """ Creates a list containing the provided node and all of its ancestors in a topological order. """
     visited = set()
     nodes = []
 
