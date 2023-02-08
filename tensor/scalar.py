@@ -135,6 +135,7 @@ class Sigmoid(Scalar):
         super().__init__(sigmoid)
 
     def _backward(self, grad: float):
+        """ Calculate the gradient of the sigmoid function. The partial derivative of sigmoid(x) w.r.t. x is (sigmoid(x) * (1 - sigmoid(x))) """
         return (grad * (self.data * (1 - self.data)), )
 
     def parents(self):
@@ -149,6 +150,7 @@ class Tanh(Scalar):
         super().__init__(tanh)
 
     def _backward(self, grad: float):
+        """ Calculate the gradient of the hyperbolic tangent function. The partial derivative of tanh(x) w.r.t. x is (1 - tanh(x)^2) """
         return (grad * (1 - self.data ** 2), )
 
     def parents(self):
