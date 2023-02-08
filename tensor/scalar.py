@@ -38,6 +38,12 @@ class Scalar:
     def sigmoid(self) -> 'Scalar':
         return Sigmoid(self)
 
+    def tanh(self) -> 'Scalar':
+        return Tanh(self)
+
+    def relu(self) -> 'Scalar':
+        return Relu(self)
+
     def __add__(self, other: Scalarable) -> 'Scalar':
         return Add(self, other)
 
@@ -122,9 +128,9 @@ class Pow(Scalar):
         return (self._base, self._exp)
 
 class Sigmoid(Scalar):
-    def __init__(self, value):
-        self._value = self._as_scalar(value)
-        sigmoid = 1 / (1 + math.exp(-self._value.data))
+    def __init__(self, logit):
+        self._logit = self._as_scalar(logit)
+        sigmoid = 1 / (1 + math.exp(-self._logit.data))
 
         super().__init__(sigmoid)
 
@@ -132,4 +138,31 @@ class Sigmoid(Scalar):
         return (grad * (self.data * (1 - self.data)), )
 
     def parents(self):
-        return (self._value, )
+        return (self._logit, )
+
+class Tanh(Scalar):
+    def __init__(self, logit):
+        self._logit = self._as_scalar(logit)
+        exp = math.exp(2 * self._logit.data)
+        tanh = (exp - 1) / (exp + 1)
+
+        super().__init__(tanh)
+
+    def _backward(self, grad: float):
+        return (grad * (1 - self.data ** 2), )
+
+    def parents(self):
+        return (self._logit, )
+
+class Relu(Scalar):
+    def __init__(self, activation):
+        self._activation = self._as_scalar(activation)
+        relu = 0.0 if self._activation.data < 0 else self._activation.data
+
+        super().__init__(relu)
+
+    def _backward(self, grad: float):
+        return (grad * (self.data > 0), )
+
+    def parents(self):
+        return (self._activation, )
