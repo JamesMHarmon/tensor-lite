@@ -121,9 +121,9 @@ class Pow(Scalar):
     def _backward(self, grad: float):
         return (
             grad * (self._exp.data * self._base.data ** (self._exp.data - 1)),
-            grad * (self._base.data ** self._exp.data * math.log(self._base.data))
+            grad * (self._base.data ** self._exp.data * math.log(self._base.data)) if self._base.data > 0.0 else 0.0
         )
-
+ 
     def parents(self):
         return (self._base, self._exp)
 
