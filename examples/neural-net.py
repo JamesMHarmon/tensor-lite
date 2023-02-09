@@ -23,7 +23,7 @@ def main():
     def dense_layer(num_inputs, num_outputs, activation=lambda inputs: inputs):
         """ Creates a dense layer for the network. Each output is calculated by multiplying the input values by the layer's weights, summing, adding a bias, and applying an activation. """
         weights, biases = [instantiate_scalars_normal(num_inputs) for _ in range(num_outputs)], instantiate_scalars_normal(num_outputs)
-        forward_fn = lambda inputs: activation([sum((input * weight for input in inputs for weight in subWeights)) + bias for subWeights, bias in zip(weights, biases)])
+        forward_fn = lambda inputs: activation([sum(input * weight for input, weight in zip(inputs, subWeights)) + bias for subWeights, bias in zip(weights, biases)])
         forward_fn.parameters = lambda: [weight for subWeights in weights for weight in subWeights] + biases
 
         return forward_fn
@@ -81,9 +81,9 @@ def main():
         predicted = [forward_pass(inputs, layers) for inputs in X]
 
         # Calculate the loss between the target values and the predicted values. The loss function used is MSE (Mean Squared Error) in this example.
-        loss_fn = lambda target, predicted: sum((t - p) ** 2 for t, p in zip(target, predicted)) / len(predicted)
+        loss_fn = lambda target, predicted: sum((t - p) ** 2 / len(predicted) for t, p in zip(target, predicted)) / batch_size
         losses = [loss_fn(target, predicted) for target, predicted in zip(Y, predicted)]
-        print(f'Step={step + 1}, Loss={sum(loss.data for loss in losses) / len(losses): .04f}')
+        print(f'Step={step + 1}, Loss={sum(loss.data for loss in losses): .04f}')
 
         for loss in losses:
             loss.backward()
