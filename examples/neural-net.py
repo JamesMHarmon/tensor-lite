@@ -1,10 +1,12 @@
 def main():
     from tensor import Scalar
     import random as ran
+    import math
 
     def instantiate_scalars_normal(size):
         """ Instantiate a set of scalars sampled randomly from a normal distribution. """
-        return [Scalar(ran.gauss(mu=0.0, sigma=1.0)) for _ in range(size)]
+        # return [Scalar(ran.gauss(mu=0.0, sigma=math.sqrt(2 / size))) for _ in range(size)] # He weight initialization is preferred when using relu activations.
+        return [Scalar(ran.uniform(-1 / math.sqrt(size), 1 / math.sqrt(size)))]  # Xavier weight initialization is preferred when using tanh and/or sigmoid activations.
 
     def relu():
         """ Applies the relu function to each input. """
