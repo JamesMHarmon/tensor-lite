@@ -44,6 +44,9 @@ class Scalar:
     def relu(self) -> 'Scalar':
         return Relu(self)
 
+    def log(self) -> 'Scalar':
+        return Log(self)
+
     def __add__(self, other: Scalarable) -> 'Scalar':
         return Add(self, other)
 
@@ -126,6 +129,20 @@ class Pow(Scalar):
  
     def parents(self):
         return (self._base, self._exp)
+
+class Log(Scalar):
+    def __init__(self, logit):
+        self._logit = self._as_scalar(logit)
+        log = math.log(self._logit.data + 1e-12)
+
+        super().__init__(log)
+
+    def _backward(self, grad: float):
+        """ Calculate the gradient of the sigmoid function. The partial derivative of ln(x) w.r.t. x is (1 / x) """
+        return (grad * (1 / (self._logit.data + 1e-12)), )
+
+    def parents(self):
+        return (self._logit, )
 
 class Sigmoid(Scalar):
     def __init__(self, logit):
