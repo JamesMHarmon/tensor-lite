@@ -25,16 +25,25 @@ def main():
         return lambda inputs: [input.sigmoid() for input in inputs]
 
     def dense_layer(num_inputs, num_outputs, activation=lambda inputs: inputs, initializer=None):
-        """ Creates a dense layer for the network. Each output is calculated by multiplying the input values by the layer's weights via dot product, summing, adding a bias, and applying an activation. """
+        """Create a dense layer for the network. Each output is calculated by performing a dot product between inputs and weights, adding a bias term, and applying an activation function."""
         initializer = xavier_uniform() if initializer is None else initializer
-        weights, biases = [initializer(num_inputs) for _ in range(num_outputs)], initializer(num_outputs)
-        forward_fn = lambda inputs: activation([sum(input * weight for input, weight in zip(inputs, subWeights)) + bias for subWeights, bias in zip(weights, biases)])
-        forward_fn.parameters = lambda: [weight for subWeights in weights for weight in subWeights] + biases
+        weights = [initializer(num_inputs) for _ in range(num_outputs)]
+        biases = initializer(num_outputs)
+
+        def forward_fn(inputs):
+            outputs = [0] * num_outputs
+            for i in range(num_outputs):
+                for j in range(num_inputs):
+                    outputs[i] += inputs[j] * weights[i][j]
+                outputs[i] += biases[i]
+            return activation(outputs)
+
+        forward_fn.parameters = lambda: [param for weight in weights for param in weight] + biases
 
         return forward_fn
 
     def forward_pass(inputs, layers):
-        """ Perform a forward pass over the net by providing the inputs as well as the parameters. Along with computing a forward pass, this will also construct a graph of the net that can be used in back propagation. """
+        """ Perform a forward pass through using the provided inputs and parameters. This also constructs a computation graph for backpropagation. """
         outputs = [Scalar(input) for input in inputs]
 
         for layer in layers:
@@ -49,24 +58,25 @@ def main():
         """
         def step():
             for param in parameters:
-                param.data += -param.grad * learning_rate
+                param.data -= param.grad * learning_rate
 
-        def zero():
+        def zero_grad():
             for param in parameters:
                 param.grad = 0.0
 
-        optimizer = namedtuple('SGD', ['step', 'zero'])
-        optimizer.step = step
-        optimizer.zero = zero
-        return optimizer
+        Optimizer = namedtuple('SGD', ['step', 'zero_grad'])
+        return Optimizer(step, zero_grad)
 
     def binary_cross_entropy_loss(target, predicted):
-        """ Common loss function for binary classification. Expects target values and predicted values to be in the range 0-1. """
-        return -sum((t * p.log() + (1 - t) * (1 - p).log()) / len(predicted) for t, p in zip(target, predicted))
+        """Common loss function for binary classification. Expects target values and predicted values to be in the range [0, 1]."""
+        loss = sum(-(t * p.log() + (1 - t) * (1 - p).log()) for t, p in zip(target, predicted))
+
+        return loss / len(predicted)
 
     def mse_loss(target, predicted):
-        """ Measures the mean squared error (squared L2 norm) between each target and predicted element """
-        return sum((t - p) ** 2 / len(predicted) for t, p in zip(target, predicted))
+        """ Measures the mean squared error (squared L2 norm) between each target and predicted element. The mean squared error is commonly used as a loss function in regression problems, where the goal is to predict a continuous value. """
+        loss = sum((t - p) ** 2 for t, p in zip(target, predicted))
+        return loss / len(predicted)
 
     """ Define the size of the neural net. Here we have an input of 2 neurons, followed by a hidden layer of 8 neurons, and then an output of 1 neuron(s). """
     num_inputs, hidden_layer_size, num_outputs = 2, 4, 1
@@ -93,18 +103,15 @@ def main():
         X = [[ran.uniform(-2.0, 2.0) for _ in range(num_inputs)] for _ in range(batch_size)]
         Y = [[target_fn(*inputs)] for inputs in X]
         predicted = [forward_pass(inputs, layers) for inputs in X]
-
         # Calculate the loss between the target values and the predicted values. Use either mse_loss or binary_cross_entropy_loss here.
-        losses = [binary_cross_entropy_loss(target, predicted) / batch_size for target, predicted in zip(Y, predicted)]
-
-        for loss in losses:
-            loss.backward()
-
+        losses = [binary_cross_entropy_loss(target, predicted) for target, predicted in zip(Y, predicted)]
+        total_loss = sum(losses) / batch_size
+        total_loss.backward()
         optimizer.step()
-        optimizer.zero()
+        optimizer.zero_grad()
 
         if step % 100 == 0:
-            print(f'Step={step}, Loss={sum(loss.data for loss in losses): .04f}')
+            print(f'Step={step}, Loss={total_loss.data: .04f}')
 
 if __name__ == '__main__':
     import sys, os
