@@ -62,25 +62,30 @@ def main():
     ]
     parameters = [param for layer in layers for param in layer.parameters()]
 
-    optimizer = sgd_optimizer(parameters, learning_rate=0.1)
+    optimizer = sgd_optimizer(parameters, learning_rate=0.01)
 
     # Target function is the function that we are trying to create a function estimator for. Usually you would not have a literal function but instead would have data to sample from.
     # In this example target_fn, we want to determine if two points are within a circle with a radius of 2.0.
     target_fn = lambda x, y: float(x ** 2 + y ** 2 <= 2.0)
 
     num_steps = 500
+    batch_size = 64
     # Perform n number of steps to optimize the network.
     for step in range(num_steps):
 
         # For each step, perform a forward pass with the input sample data.
-        inputs = [ran.uniform(-2.0, 2.0) for _ in range(num_inputs)]
-        outputs = forward_pass(inputs, layers)
+        X = [[ran.uniform(-2.0, 2.0) for _ in range(num_inputs)] for _ in range(batch_size)]
+        Y = [[target_fn(*inputs)] for inputs in X]
+        predicted = [forward_pass(inputs, layers) for inputs in X]
 
-        # Calculate the loss between the actual values and the predicated values. The loss function used is MSE (Mean Squared Error) in this example.
-        actuals = [target_fn(*inputs)]
-        loss = sum((target - predicated) ** 2 for target, predicated in zip(actuals, outputs)) / len(outputs)
-        print(f'Step={step + 1}, Loss={loss.data}')
-        loss.backward()
+        # Calculate the loss between the target values and the predicted values. The loss function used is MSE (Mean Squared Error) in this example.
+        loss_fn = lambda target, predicted: sum((t - p) ** 2 for t, p in zip(target, predicted)) / len(predicted)
+        losses = [loss_fn(target, predicted) for target, predicted in zip(Y, predicted)]
+        print(f'Step={step + 1}, Loss={sum(loss.data for loss in losses) / len(losses): .04f}')
+
+        for loss in losses:
+            loss.backward()
+
         optimizer.step()
         optimizer.zero()
 
