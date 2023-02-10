@@ -1,6 +1,6 @@
 def main():
     from collections import namedtuple
-    from tensor import Scalar
+    from tensor import Scalar, Adam, SGD
     import random as ran
     import math
 
@@ -51,22 +51,6 @@ def main():
 
         return outputs
 
-    def sgd_optimizer(parameters, learning_rate):
-        """
-        Optimizes the loss using stochastic gradient descent. After each backward pass, step is called which multiplies the gradient for each parameter by the learning rate.
-        After each step optimization, the gradients need to be zeroed before another backward pass is performed.
-        """
-        def step():
-            for param in parameters:
-                param.data -= param.grad * learning_rate
-
-        def zero_grad():
-            for param in parameters:
-                param.grad = 0.0
-
-        Optimizer = namedtuple('SGD', ['step', 'zero_grad'])
-        return Optimizer(step, zero_grad)
-
     def binary_cross_entropy_loss(target, predicted):
         """Common loss function for binary classification. Expects target values and predicted values to be in the range [0, 1]."""
         loss = sum(-(t * p.log() + (1 - t) * (1 - p).log()) for t, p in zip(target, predicted))
@@ -87,7 +71,6 @@ def main():
     ]
     parameters = [param for layer in layers for param in layer.parameters()]
 
-    optimizer = sgd_optimizer(parameters, learning_rate=0.1)
 
     # Target function is the function that we are trying to create a function estimator for. Usually you would not have a literal function but instead would have data to sample from.
     # In this example target_fn, we want to determine if a point is within a circle with a radius of 2.0.
@@ -95,6 +78,9 @@ def main():
 
     num_steps = 5_000
     batch_size = 32
+    learning_rate = 0.1
+
+    optimizer = SGD(parameters, learning_rate=learning_rate, momentum=0.5)
 
     # Perform n number of steps to optimize the network.
     for step in range(1, num_steps + 1):
