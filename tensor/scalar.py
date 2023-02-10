@@ -39,7 +39,7 @@ class Scalar:
         return Sigmoid(self)
 
     def tanh(self) -> 'Scalar':
-        return Tanh(self)
+        return 2.0 * (self * 2).sigmoid() - 1.0
 
     def relu(self) -> 'Scalar':
         return Relu(self)
@@ -154,21 +154,6 @@ class Sigmoid(Scalar):
     def _backward(self, grad: float):
         """ Calculate the gradient of the sigmoid function. The partial derivative of sigmoid(x) w.r.t. x is (sigmoid(x) * (1 - sigmoid(x))) """
         return (grad * (self.data * (1 - self.data)), )
-
-    def parents(self):
-        return (self._logit, )
-
-class Tanh(Scalar):
-    def __init__(self, logit):
-        self._logit = self._as_scalar(logit)
-        exp = math.exp(2 * self._logit.data)
-        tanh = (exp - 1) / (exp + 1)
-
-        super().__init__(tanh)
-
-    def _backward(self, grad: float):
-        """ Calculate the gradient of the hyperbolic tangent function. The partial derivative of tanh(x) w.r.t. x is (1 - tanh(x)^2) """
-        return (grad * (1 - self.data ** 2), )
 
     def parents(self):
         return (self._logit, )
