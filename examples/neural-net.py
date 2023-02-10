@@ -97,7 +97,7 @@ def main():
     batch_size = 32
 
     # Perform n number of steps to optimize the network.
-    for step in range(num_steps):
+    for step in range(1, num_steps + 1):
 
         # For each step, perform a forward pass with the input sample data.
         X = [[ran.uniform(-2.0, 2.0) for _ in range(num_inputs)] for _ in range(batch_size)]
@@ -110,7 +110,7 @@ def main():
         optimizer.step()
         optimizer.zero_grad()
 
-        if step % 100 == 0:
+        if step in [1, num_steps] or step % 100 == 0:
             print(f'Step={step}, Loss={total_loss.data: .04f}')
 
 if __name__ == '__main__':
