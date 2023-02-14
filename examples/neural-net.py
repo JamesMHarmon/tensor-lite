@@ -53,6 +53,10 @@ def main():
 
         return loss / len(predicted)
 
+    def regularization_loss(reg_term, parameters):
+        """ Calculates the L2 regularization loss for the provided set of neural network parameters. """
+        return reg_term * sum(parameter ** 2 for parameter in parameters)
+
     def calculate_accuracy(size):
         X = [[ran.uniform(-2.0, 2.0) for _ in range(num_inputs)] for _ in range(size)]
         Y = [target_fn(*inputs) for inputs in X]
@@ -82,6 +86,7 @@ def main():
     num_steps = 5_000
     batch_size = 32
     learning_rate = 0.1
+    regularization_term = 2e-3
 
     optimizer = SGD(parameters, learning_rate=learning_rate, momentum=0.5)
 
@@ -96,13 +101,14 @@ def main():
 
         # Calculate the loss between the target values and the predicted values. Use either mse_loss or binary_cross_entropy_loss here.
         losses = [binary_cross_entropy_loss(target, predicted) for target, predicted in zip(Y, predicted)]
-        total_loss = sum(losses) / batch_size
+        reg_loss = regularization_loss(regularization_term, parameters)
+        total_loss = sum(losses) / batch_size + reg_loss
         total_loss.backward()
         optimizer.step()
 
         if step in [1, num_steps] or step % 100 == 0:
             accuracy = calculate_accuracy(100)
-            print(f'Step={step}, Loss={total_loss.data: .04f}, Accuracy={accuracy:.1%}')
+            print(f'Step={step}, Loss={total_loss.data - reg_loss.data:.04f}, RegLoss={reg_loss.data:0.4f}, Accuracy={accuracy:0.1%}')
 
 if __name__ == '__main__':
     import sys, os
