@@ -1,6 +1,6 @@
 def main():
     from collections import namedtuple
-    from tensor import Scalar, Adam, SGD
+    from tensor import Scalar, SGD
     import random as ran
     import math
 
@@ -28,7 +28,7 @@ def main():
         """Create a dense layer for the network. Each output is calculated by performing a dot product between inputs and weights, adding a bias term, and applying an activation function."""
         initializer = xavier_uniform() if initializer is None else initializer
         weights = [initializer(num_inputs) for _ in range(num_outputs)]
-        biases = initializer(num_outputs)
+        biases = [Scalar(0.0) for _ in range(num_outputs)]
 
         def forward_fn(inputs):
             outputs = [0] * num_outputs
@@ -57,11 +57,6 @@ def main():
 
         return loss / len(predicted)
 
-    def mse_loss(target, predicted):
-        """ Measures the mean squared error (squared L2 norm) between each target and predicted element. The mean squared error is commonly used as a loss function in regression problems, where the goal is to predict a continuous value. """
-        loss = sum((t - p) ** 2 for t, p in zip(target, predicted))
-        return loss / len(predicted)
-
     """ Define the size of the neural net. Here we have an input of 2 neurons, followed by a hidden layer of 8 neurons, and then an output of 1 neuron(s). """
     num_inputs, hidden_layer_size, num_outputs = 2, 4, 1
     layers = [
@@ -73,7 +68,7 @@ def main():
 
 
     # Target function is the function that we are trying to create a function estimator for. Usually you would not have a literal function but instead would have data to sample from.
-    # In this example target_fn, we want to determine if a point is within a circle with a radius of 2.0.
+    # In this example target_fn, we want to determine if a point is within a circle with a radius of 1.414.
     target_fn = lambda x, y: float(x ** 2 + y ** 2 <= 2.0)
 
     num_steps = 5_000
