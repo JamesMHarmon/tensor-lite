@@ -31,11 +31,8 @@ def main():
         biases = [Scalar(0.0) for _ in range(num_outputs)]
 
         def forward_fn(inputs):
-            outputs = [0] * num_outputs
-            for i in range(num_outputs):
-                for j in range(num_inputs):
-                    outputs[i] += inputs[j] * weights[i][j]
-                outputs[i] += biases[i]
+            matmul = lambda inputs, weights: (input * weight for input, weight in zip(inputs, weights))
+            outputs = [sum(matmul(inputs, weights_inner)) + bias for weights_inner, bias in zip(weights, biases)]
             return activation(outputs)
 
         forward_fn.parameters = lambda: [param for weight in weights for param in weight] + biases
