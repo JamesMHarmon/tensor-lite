@@ -15,9 +15,56 @@ Tensor-Lite is a simple library for building and training machine learning model
 
 ## Example usage
 
-Here is a simple example that demonstrates how to use Tensor-Lite to optimize a linear regression model:
+### Linear Function
+
+Below is a simple example that demonstrates a linear function in Tensor-Lite along with a visualization of the data and grad that is generated:
 
 ```python
+from tensor import Scalar
+
+X = Scalar(2.0)
+w = Scalar(3.0)
+b = Scalar(5.0)
+
+out = X * w + b
+out.backward()
+```
+
+![alt](./assets/grad-example.svg)
+
+### Logistic Regression
+
+Here is an example that demonstrates using Tensor-Lite to optimize a linear regression model:
+
+```python
+from tensor import Scalar
+
+# Generate some sample data emulating the function y = 2x + 1
+x = [1, 2, 3, 4, 5]
+y = [3, 5, 7, 9, 11]
+
+# Initialize the parameters
+theta = [Scalar(0.0), Scalar(0.0)]
+
+# Set the learning rate and the number of iterations
+learning_rate = 0.01
+num_iterations = 1000
+
+# Train the model using gradient descent
+for _ in range(num_iterations):
+    # Construct the computational graph of the linear regression model and predict the output values using the learned parameters.
+    w, b = theta
+    y_predictions = [x * w + b for x in x]
+    loss = sum((y_prediction - y_target) ** 2 for y_target, y_prediction in zip(y, y_predictions))
+    # Compute the gradient of the loss function with respect to the parameters
+    loss.backward()
+    # Update the learnable parameters
+    for param in theta:
+        param.data -= learning_rate * param.grad
+        param.grad = 0.0
+
+# Print the learned parameters.
+print("Learned parameters: ", theta)
 ```
 
 ## Example directory
