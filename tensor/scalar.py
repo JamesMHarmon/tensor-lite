@@ -47,13 +47,16 @@ class Scalar:
     def log(self) -> 'Scalar':
         return Log(self)
 
+    def exp(self) -> 'Scalar':
+        return Pow(math.e, self)
+
     def __add__(self, other: Scalarable) -> 'Scalar':
         return Add(self, other)
 
     def __mul__(self, other: Scalarable) -> 'Scalar':
         return Multiply(self, other)
 
-    def __pow__(self,  exponent: float) -> 'Scalar':
+    def __pow__(self, exponent: float) -> 'Scalar':
         return Pow(self, exponent)
 
     def __radd__(self, other: Scalarable) -> 'Scalar':

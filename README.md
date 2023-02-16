@@ -23,14 +23,58 @@ Below is a simple example that demonstrates a linear function in Tensor-Lite alo
 from tensor import Scalar
 
 X = Scalar(2.0)
-w = Scalar(3.0)
-b = Scalar(5.0)
+w = 3.0
+b = 5.0
 
 out = X * w + b
 out.backward()
 ```
 
 ![alt](./assets/grad-example.svg)
+
+### Sample Operations
+
+Here are some sample operations that can be used to build a computational graph using tensor-lite as well as gradient descent optimization related methods.
+
+
+```python
+from tensor import Scalar
+
+# Tensor operations
+a = Scalar(1.0)
+b = a + 2.0
+b += 19.0
+b += a
+c = a * b
+d = b / c
+e = c ** d
+f = a + a + a
+g = f
+h = sum([a, b, c, e, f, g])
+i = h.log()
+j = i.exp()
+k = j.sigmoid()
+l = k.tanh()
+m = l.relu()
+
+# Get the value of each node in the graph.
+print(f'{a.data:.4f=}, {m.data:.4f=}')
+
+# Calculate the gradient w.r.t. each tensor as a parameter
+m.backward()
+
+# Get the gradient for each node in the graph.
+print(f'grad={a.grad:.4f}, grad={m.grad:.4f}')
+
+# Optimizers
+from tensor import Adam, SGD
+parameters = [a,b,c,d,e,f,g,h,i,j,k,l,m]
+optimizer = SGD(parameters, learning_rate=0.1, momentum=0.9)
+optimizer = Adam(parameters, learning_rate=0.1, beta1=0.9, beta2=0.999, eps=1e-8)
+
+optimizer.step()
+optimizer.zero_grad()
+```
 
 ### Logistic Regression
 
@@ -67,7 +111,7 @@ for _ in range(num_iterations):
 print("Learned parameters: ", theta)
 ```
 
-## Example directory
+### Example directory
 
 The [example directory](./examples) contains a number of examples that demonstrate how to use Tensor-Lite to solve various machine learning problems, including linear regression, logistic regression, and neural networks.
 
