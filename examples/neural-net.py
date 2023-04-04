@@ -31,7 +31,7 @@ def main():
 
         def forward_fn(inputs):
             matmul = lambda inputs, weights: (input * weight for input, weight in zip(inputs, weights))
-            outputs = [sum(matmul(inputs, weights_inner)) + bias for weights_inner, bias in zip(weights, biases)]
+            outputs = [sum(matmul(inputs, connections)) + bias for connections, bias in zip(weights, biases)]
             return activation(outputs)
 
         forward_fn.parameters = lambda: [param for weight in weights for param in weight] + biases
